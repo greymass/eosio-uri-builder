@@ -11,6 +11,24 @@ import {
 import ReactJson from 'react-json-view';
 
 class FormFields extends Component {
+  formatValue = (type, value) => {
+    switch (type) {
+      case 'string': {
+        try {
+          // Try re-encoding to ensure it's not an object.
+          return JSON.stringify(JSON.parse(value));
+        } catch(err) {
+          // no catch, ignore
+        }
+        // otherwise just stringify and return
+        return value;
+      }
+      default: {
+        return value;
+      }
+    }
+    return value;
+  }
   render() {
     const {
       fields,
@@ -23,17 +41,21 @@ class FormFields extends Component {
           <Header>
             Field Data
           </Header>
-          {fields.map((field, idx) => (
-            <Form.Field key={field.name}>
-              <Form.Input
-                autoFocus={(idx === 0)}
-                defaultValue={values[field.name]}
-                label={field.name}
-                name={field.name}
-                onChange={onChange}
-              />
-            </Form.Field>
-          ))}
+          {fields.map((field, idx) => {
+            const { name, type } = field;
+            let value = this.formatValue(type, values[name]);
+            return (
+              <Form.Field key={name}>
+                <Form.Input
+                  autoFocus={(idx === 0)}
+                  value={value}
+                  label={name}
+                  name={name}
+                  onChange={onChange}
+                />
+              </Form.Field>
+            );
+          })}
         </Segment>
         <Segment inverted basic>
           <Header>
