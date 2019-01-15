@@ -1,7 +1,7 @@
 {
   "name": "eosio-uri-builder",
   "version": "0.0.1",
-  "homepage": "https://greymass.github.io/uri-builder",
+  "homepage": "https://greymass.github.io/eosio-uri-builder",
   "private": true,
   "dependencies": {
     "eosio-uri": "0.0.3",
