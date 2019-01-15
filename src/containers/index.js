@@ -202,8 +202,17 @@ class IndexContainer extends Component {
           onChange={this.onChangeCallback}
           values={this.state.callback}
         />
-      ) }
-    ]
+      ) },
+    ];
+
+    if (uri) {
+      panes.push({ menuItem: 'Generated URI', render: () => (
+        <TabURI
+          uri={uri}
+          tx={tx}
+        />
+      )});
+    }
 
     return (
       <Container className="App" style={{ paddingTop: "1em" }}>
@@ -229,7 +238,7 @@ class IndexContainer extends Component {
               )
               : false
             }
-            {(action && fields && !uri)
+            {(action && fields)
               ? (
                 <Segment attached secondary>
                   <Tab panes={panes} />
@@ -240,30 +249,7 @@ class IndexContainer extends Component {
                   />
                 </Segment>
               )
-              : (
-                <Segment attached>
-                  <Header>
-                    URI Generated:
-                    <Header.Subheader style={{ marginTop: '0.5em' }}>
-                      <a href={uri} target="_blank">
-                        {uri}
-                      </a>
-                    </Header.Subheader>
-                  </Header>
-                  <Header size="small">
-                    URI Transaction:
-                  </Header>
-                  <ReactJson
-                    displayDataTypes={false}
-                    displayObjectSize={false}
-                    iconStyle="square"
-                    name={null}
-                    src={tx}
-                    style={{ padding: '1em' }}
-                    theme="harmonic"
-                  />
-                </Segment>
-              )
+              : false
             }
           </Form>
         </Segment>
