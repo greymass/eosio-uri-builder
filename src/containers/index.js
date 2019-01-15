@@ -85,9 +85,9 @@ class IndexContainer extends Component {
     const { match } = props;
     if (match && match.params && match.params.uri) {
       this.setState({
-        uri: `eosio://${match.params.uri}`
+        uri: `${match.params.uri}`
       }, () => {
-        decode(`eosio://${match.params.uri}`);
+        decode(`${match.params.uri}`);
       });
     }
     if (this.state.contract && !this.state.abi) {
@@ -135,7 +135,7 @@ class IndexContainer extends Component {
     const {
       authorization
     } = this.state;
-    const decoded = SigningRequest.from(uri, opts);
+    const decoded = SigningRequest.from(`eosio://${uri}`, opts);
     const actions = await decoded.getActions();
     const head = (await eos.getInfo(true)).head_block_num;
     const block = await eos.getBlock(head);
