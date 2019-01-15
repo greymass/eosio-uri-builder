@@ -126,6 +126,33 @@ class IndexContainer extends Component {
 
   onSelect = (e, { name, value }) => this.setState({ [name]: value })
 
+  decode = async (uri = false) => {
+    const {
+      authorization
+    } = this.state;
+    const decoded = SigningRequest.from(uri, opts);
+    const actions = await decoded.getActions();
+    const head = (await eos.getInfo(true)).head_block_num;
+    const block = await eos.getBlock(head);
+    const tx = await decoded.getTransaction(authorization, block);
+    const cb = decoded.data.callback.url;
+    const action = actions[0];
+    this.setState({
+      action: action.name,
+      callback: {
+        background: false,
+        url: cb
+      },
+      contract: action.account,
+      fields: Object.assign({}, action.data),
+      decoded: {
+        actions,
+        tx,
+        callback: cb,
+      }
+    });
+  }
+
   generate = async () => {
     const {
       abi,
@@ -145,22 +172,9 @@ class IndexContainer extends Component {
       }]
     }, opts);
     const uri = req.encode();
-    const decoded = SigningRequest.from(uri, opts);
-    const actions = await decoded.getActions();
-    const exampleSigner = {
-      actor: 'example_account',
-      permission: 'example_permission',
-    };
-    console.log(eos)
-    const tx = await decoded.getTransaction(exampleSigner, {});
-    const cb = req.data.callback.url;
+    this.decode(uri);
     this.setState({
-      uri,
-      decoded: {
-        actions,
-        tx,
-        callback: cb,
-      }
+      uri
     });
   }
 
