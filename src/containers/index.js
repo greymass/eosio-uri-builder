@@ -82,6 +82,16 @@ class IndexContainer extends Component {
     this.state = Object.assign({}, initialState);
   }
   componentWillMount() {
+    const uriState = {};
+    const { decode, props } = this;
+    const { match } = props;
+    if (match && match.params && match.params.uri) {
+      this.setState({
+        uri: `eosio://${match.params.uri}`
+      }, () => {
+        decode(`eosio://${match.params.uri}`);
+      });
+    }
     if (this.state.contract && !this.state.abi) {
       eos.getAbi(this.state.contract).then((result) => {
         this.setState({ abi: result.abi });
