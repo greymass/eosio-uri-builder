@@ -31,22 +31,19 @@ const eos = eosjs({
 
 const initialState = {
   abi: false,
-  action: 'voteproducer',
+  action: false,
   authorization: {
     actor: "............1",
     permission: "............1",
   },
   callback: {
     background: false,
-    url: 'http://eos.greymass.com',
+    url: '',
   },
-  contract: 'eosio',
+  contract: false,
   decoded: {},
-  fields: {
-    "voter": "............1",
-    "proxy": "",
-    "producers": "teamgreymass"
-  },
+  fields: {},
+  uri: false,
 };
 
 const knownContracts = [
