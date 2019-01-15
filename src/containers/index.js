@@ -21,6 +21,7 @@ import FormCallback from '../components/form/callback';
 import FormFields from '../components/form/fields';
 import SelectorAction from '../components/selector/action';
 import SelectorContract from '../components/selector/contract';
+import TabURI from '../components/tab/uri';
 
 const { SigningRequest } = require("eosio-uri");
 
