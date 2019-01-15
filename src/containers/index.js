@@ -31,8 +31,11 @@ const eos = eosjs({
 
 const initialState = {
   abi: false,
-  action: 'bidname',
-  authorization: { actor: 'teamgreymass', permission: 'active' },
+  action: 'voteproducer',
+  authorization: {
+    actor: "............1",
+    permission: "............1",
+  },
   callback: {
     background: false,
     url: 'http://eos.greymass.com',
@@ -40,9 +43,9 @@ const initialState = {
   contract: 'eosio',
   decoded: {},
   fields: {
-    "bidder": "asdf",
-    "newname": "asdf",
-    "bid": "0.0001 EOS"
+    "voter": "............1",
+    "proxy": "",
+    "producers": "teamgreymass"
   },
 };
 
@@ -137,10 +140,7 @@ class IndexContainer extends Component {
       actions: [{
         account: contract,
         name: action,
-        authorization: [{
-          actor: "............1",
-          permission: "............1",
-        }],
+        authorization: [authorization],
         data: fields
       }]
     }, opts);
