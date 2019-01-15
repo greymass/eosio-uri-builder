@@ -97,7 +97,6 @@ class IndexContainer extends Component {
     }
   }
   componentWillUpdate(nextProps, nextState) {
-    console.log(nextState)
     if (
       this.state.contract !== nextState.contract
     ) {
@@ -108,7 +107,6 @@ class IndexContainer extends Component {
   }
 
   onChangeCallback = (e, { checked, name, value }) => {
-    console.log(name, value)
     this.setState({
       callback: Object.assign({}, this.state.callback, {
         [name]: value || checked
@@ -117,7 +115,6 @@ class IndexContainer extends Component {
   }
 
   onChangeField = (e, { name, value }) => {
-    console.log(name, value)
     this.setState({
       fields: Object.assign({}, this.state.fields, {
         [name]: value
@@ -210,7 +207,6 @@ class IndexContainer extends Component {
         ({ fields } = struct);
       }
     }
-    console.log(this.state)
     const panes = [
       { menuItem: 'Action Data', render: () => (
         <FormFields
