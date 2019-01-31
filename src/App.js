@@ -8,8 +8,7 @@ export default class App extends Component {
     return (
       <Router>
         <div>
-          <Route exact path="/" component={IndexContainer}/>
-          <Route exact path="/:uri" component={IndexContainer}/>
+          <Route exact path="/eosio-uri-builder" component={IndexContainer}/>
           <Route exact path="/eosio-uri-builder/:uri" component={IndexContainer}/>
         </div>
       </Router>

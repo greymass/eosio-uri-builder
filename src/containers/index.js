@@ -9,6 +9,7 @@ import {
   Dropdown,
   Form,
   Header,
+  Message,
   Segment,
   Select,
   Tab,
@@ -32,7 +33,7 @@ const eos = eosjs({
 
 const initialState = {
   abi: false,
-  action: false,
+  action: 'transfer',
   authorization: {
     actor: "............1",
     permission: "............1",
@@ -41,10 +42,14 @@ const initialState = {
     background: false,
     url: '',
   },
-  contract: false,
+  contract: 'eosio.token',
   decoded: {},
   fields: {},
+  fieldsMatchSigner: {},
+  fieldsPromptSigner: {},
+  loading: false,
   uri: false,
+  uriError: false
 };
 
 const knownContracts = [
@@ -84,10 +89,12 @@ class IndexContainer extends Component {
     const { decode, props } = this;
     const { match } = props;
     if (match && match.params && match.params.uri) {
+      const uri = `eosio://${match.params.uri}`;
       this.setState({
-        uri: `${match.params.uri}`
+        loading: true,
+        uri
       }, () => {
-        decode(`${match.params.uri}`);
+        decode(uri);
       });
     }
     if (this.state.contract && !this.state.abi) {
@@ -101,8 +108,29 @@ class IndexContainer extends Component {
       this.state.contract !== nextState.contract
     ) {
       eos.getAbi(nextState.contract).then((result) => {
+        console.log(result.abi)
         this.setState({ abi: result.abi });
       });
+    }
+    if (
+      this.state.action
+      && this.state.action !== nextState.action
+    ) {
+      console.log(this.state.action, nextState.action, nextState)
+      const { abi, action } = nextState;
+      const { structs } = abi;
+      const struct = find(structs, { name: action });
+      if (struct) {
+        const { fields } = struct;
+        const defaultFields = {};
+        fields.forEach((field) => {
+          defaultFields[field.name] = '';
+        });
+        this.setState({
+          uri: undefined,
+          fields: defaultFields
+        });
+      }
     }
   }
 
@@ -122,26 +150,94 @@ class IndexContainer extends Component {
     });
   }
 
+  onChangeMatchSigner = (e, { name }) => {
+    const {
+      fields,
+      fieldsMatchSigner,
+      fieldsPromptSigner
+    } = this.state;
+    const newValue = !(fieldsMatchSigner[name] || false)
+    const newState = {
+      // Set the field to the placeholder value
+      fields: Object.assign({}, fields, {
+        [name]: (newValue) ? '............1' : ''
+      }),
+      // Set the boolean value
+      fieldsMatchSigner: Object.assign({}, fieldsMatchSigner, {
+        [name]: newValue
+      })
+    }
+    if (fieldsPromptSigner[name]) {
+      newState['fieldsPromptSigner'] = Object.assign({}, fieldsPromptSigner, {
+        [name]: false
+      })
+    }
+    this.setState(newState);
+    e.preventDefault();
+    return false;
+  }
+
+  onChangePromptSigner = (e, { name, checked }) => {
+    const {
+      fields,
+      fieldsMatchSigner,
+      fieldsPromptSigner
+    } = this.state;
+    const newValue = !(fieldsPromptSigner[name] || false)
+    const newState = {
+      fields: Object.assign({}, fields, {
+        [name]: (newValue) ? '............2' : ''
+      }),
+      fieldsPromptSigner: Object.assign({}, fieldsPromptSigner, {
+        [name]: newValue
+      })
+    }
+    if (fieldsMatchSigner[name]) {
+      newState['fieldsMatchSigner'] = Object.assign({}, fieldsMatchSigner, {
+        [name]: false
+      });
+    }
+    this.setState(newState);
+    e.preventDefault();
+    return false;
+  }
+
   onResetContract = () => {
+    console.log("onResetContract")
     this.setState({
       abi: false,
       contract: false,
     });
   }
 
-  onSelect = (e, { name, value }) => this.setState({ [name]: value })
+  onSelect = (e, { name, value }) => {
+    console.log(name, value)
+    this.setState({ [name]: value })
+  }
 
   decode = async (uri = false) => {
     const {
       authorization
     } = this.state;
-    const decoded = SigningRequest.from(`eosio://${uri}`, opts);
+    const decoded = SigningRequest.from(uri, opts);
     const actions = await decoded.getActions();
     const head = (await eos.getInfo(true)).head_block_num;
     const block = await eos.getBlock(head);
     const tx = await decoded.getTransaction(authorization, block);
     const cb = decoded.data.callback.url;
     const action = actions[0];
+    const fieldsMatchSigner = {};
+    const fieldsPromptSigner = {};
+    Object.keys(action.data).forEach((field) => {
+      const data = action.data[field];
+      if (data === '............2') {
+        fieldsPromptSigner[field] = true;
+      }
+      if (data === '............1') {
+        fieldsMatchSigner[field] = true;
+      }
+    });
+    console.log(action.data)
     this.setState({
       action: action.name,
       callback: {
@@ -149,12 +245,15 @@ class IndexContainer extends Component {
         url: cb
       },
       contract: action.account,
-      fields: Object.assign({}, action.data),
       decoded: {
         actions,
         tx,
         callback: cb,
-      }
+      },
+      fields: Object.assign({}, action.data),
+      fieldsMatchSigner,
+      fieldsPromptSigner,
+      loading: false
     });
   }
 
@@ -167,20 +266,31 @@ class IndexContainer extends Component {
       contract,
       fields
     } = this.state;
-    const req = await SigningRequest.create({
-      callback,
-      actions: [{
-        account: contract,
-        name: action,
-        authorization: [authorization],
-        data: fields
-      }]
-    }, opts);
-    const uri = req.encode();
-    this.decode(uri);
-    this.setState({
-      uri
-    });
+    try {
+      const req = await SigningRequest.create({
+        callback,
+        actions: [{
+          account: contract,
+          name: action,
+          authorization: [authorization],
+          data: fields
+        }]
+      }, opts);
+      const uri = req.encode();
+      this.decode(uri);
+      this.setState({
+        uri,
+        uriError: false
+      }, () => {
+        const data = uri.replace('eosio://', '');
+        this.props.history.replace(`/eosio-uri-builder/${data}`);
+      });
+
+    } catch(err) {
+      this.setState({
+        uriError: err.toString()
+      })
+    }
   }
 
   render() {
@@ -189,13 +299,18 @@ class IndexContainer extends Component {
       action,
       contract,
       decoded,
+      fieldsMatchSigner,
+      fieldsPromptSigner,
+      loading,
       uri,
+      uriError,
     } = this.state;
     const {
       actions,
       tx,
       callback
     } = decoded;
+    console.log(this.state.abi)
     const contractOptions = knownContracts.map((contract) => (
       { key: contract, text: contract, value: contract }
     ));
@@ -210,8 +325,13 @@ class IndexContainer extends Component {
     const panes = [
       { menuItem: 'Action Data', render: () => (
         <FormFields
+          aliases={abi.types}
           fields={fields}
+          fieldsMatchSigner={fieldsMatchSigner}
+          fieldsPromptSigner={fieldsPromptSigner}
           onChange={this.onChangeField}
+          onChangeMatchSigner={this.onChangeMatchSigner}
+          onChangePromptSigner={this.onChangePromptSigner}
           values={this.state.fields}
         />
       ) },
@@ -222,7 +342,6 @@ class IndexContainer extends Component {
         />
       ) },
     ];
-
     if (uri) {
       panes.push({ menuItem: 'Generated URI', render: () => (
         <TabURI
@@ -231,14 +350,16 @@ class IndexContainer extends Component {
         />
       )});
     }
-
     return (
       <Container className="App" style={{ paddingTop: "1em" }}>
         <Header>
           EOSIO uri-builder
         </Header>
-        <Segment>
-          <Form>
+        <Segment loading={loading}>
+          <Form
+            as="div"
+            onSubmit={() => console.log("onsubmit")}
+          >
             <SelectorContract
               contract={contract}
               contractOptions={contractOptions}
@@ -258,14 +379,50 @@ class IndexContainer extends Component {
             }
             {(action && fields)
               ? (
-                <Segment attached secondary>
-                  <Tab panes={panes} />
-                  <Button
-                    color="blue"
-                    content="Generate URI"
-                    onClick={this.generate}
-                  />
-                </Segment>
+                <React.Fragment>
+                  <Segment attached secondary>
+                    <Tab panes={panes} />
+                  </Segment>
+                  <Segment attached tertiary>
+                    <Button
+                      color="blue"
+                      content="Generate URI"
+                      icon="certificate"
+                      onClick={this.generate}
+                    />
+                    {(uri)
+                      ? (
+                        <React.Fragment>
+                          <Header>
+                            Resulting URI
+                          </Header>
+                          <TextArea value={uri} />
+                          <Divider />
+                          <Button
+                            as="a"
+                            color="green"
+                            content="Trigger URI in default handler"
+                            icon="external"
+                            href={uri}
+                          />
+                        </React.Fragment>
+                      )
+                      : false
+                    }
+                    {(uriError)
+                      ? (
+                        <Message
+                          color="red"
+                          content={uriError}
+                          header="Transaction Error"
+                          icon="exclamation circle"
+                          size="large"
+                        />
+                      )
+                      : false
+                    }
+                  </Segment>
+                </React.Fragment>
               )
               : false
             }

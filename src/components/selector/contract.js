@@ -25,13 +25,15 @@ class SelectorContract extends Component {
           <Segment attached='bottom'>
             <Form.Field>
               <Dropdown
-                defaultValue={contract}
+                allowAdditions
                 fluid
                 name="contract"
                 options={contractOptions}
                 onChange={onChange}
                 search
                 selection
+                selectOnNavigation={false}
+                value={contract}
               />
             </Form.Field>
           </Segment>

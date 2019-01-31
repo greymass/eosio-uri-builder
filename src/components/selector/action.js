@@ -21,6 +21,14 @@ class SelectorAction extends Component {
     const actionOptions = abi.actions.map((action) => (
       { key: action.name, text: action.name, value: action.name }
     ));
+    const options = [
+      {
+        key: '_',
+        text: '',
+        value: false
+      },
+      ...actionOptions
+    ];
     return (
       <React.Fragment>
         <Header inverted attached>
@@ -29,13 +37,16 @@ class SelectorAction extends Component {
         <Segment attached>
           <Form.Field>
             <Dropdown
-              defaultValue={action}
+              allowAdditions
               fluid
               name="action"
-              options={actionOptions}
+              options={options}
               onChange={onChange}
               search
               selection
+              selectOnBlur={false}
+              selectOnNavigation={false}
+              value={action}
             />
           </Form.Field>
         </Segment>

@@ -10,8 +10,97 @@ import {
 
 import ReactJson from 'react-json-view';
 
+import { find } from 'lodash';
+
 class FormFields extends Component {
+  getInput = (field, idx) => {
+    const {
+      aliases,
+      fieldsMatchSigner,
+      onChange,
+      onChangeMatchSigner,
+      values,
+    } = this.props;
+    const { name } = field;
+    let { type } = field;
+    const alias = find(aliases, { new_type_name: type });
+    const isMatchingSigner = !!(fieldsMatchSigner[name]);
+    const isTemplated = (isMatchingSigner);
+    const label = `${name} [${type}]${(alias) ? `, extending [${alias.type}]` : ''}`;
+    let fieldType = 'string';
+    let value = this.formatValue(type, values[name]);
+    let defaultInput = (
+      <Form.Input
+        autoFocus={(idx === 0)}
+        label={label}
+        name={name}
+        onChange={onChange}
+        value={value}
+      />
+    );
+    // an array of values
+    if (type.substr(type.length - 2) === "[]") {
+      let options = [];
+      fieldType = 'multi';
+      if (value && value.length > 0) {
+        options = value.map((option) => ({
+          key: option,
+          value: option,
+          text: option
+        }))
+      }
+      defaultInput = (
+        <Form.Select
+          allowAdditions
+          autoFocus={(idx === 0)}
+          options={options}
+          value={value}
+          label={label}
+          name={name}
+          selection
+          search
+          multiple
+          onChange={onChange}
+        />
+      );
+    }
+    if (isTemplated) {
+      defaultInput = (
+        <Form.Field>
+          <label>{label}</label>
+          <Form.Input
+            disabled
+            value={(isMatchingSigner) ? 'Matching Transaction Signer' : 'Prompting Transaction Signer'}
+          />
+        </Form.Field>
+      )
+    }
+    return (
+      <Segment attached secondary={(idx % 2)}>
+        <Form.Field key={name}>
+          {defaultInput}
+          {(type === 'name' || (alias && alias.type === 'name'))
+            ? (
+              <React.Fragment>
+                <Form.Checkbox
+                  checked={fieldsMatchSigner[name]}
+                  label="Match to Signer"
+                  name={name}
+                  onChange={onChangeMatchSigner}
+                />
+              </React.Fragment>
+            )
+            : false
+          }
+        </Form.Field>
+      </Segment>
+    );
+  }
   formatValue = (type, value) => {
+    // return as an empty string
+    if (value === '.............') {
+      return '';
+    }
     switch (type) {
       case 'string': {
         try {
@@ -38,24 +127,10 @@ class FormFields extends Component {
     return (
       <Segment attached>
         <Segment basic>
-          <Header>
-            Field Data
+          <Header attached="top" block>
+            Action Parameters
           </Header>
-          {fields.map((field, idx) => {
-            const { name, type } = field;
-            let value = this.formatValue(type, values[name]);
-            return (
-              <Form.Field key={name}>
-                <Form.Input
-                  autoFocus={(idx === 0)}
-                  value={value}
-                  label={name}
-                  name={name}
-                  onChange={onChange}
-                />
-              </Form.Field>
-            );
-          })}
+          {fields.map((field, idx) => this.getInput(field, idx))}
         </Segment>
         <Segment inverted basic>
           <Header>
