@@ -108,7 +108,6 @@ class IndexContainer extends Component {
       this.state.contract !== nextState.contract
     ) {
       eos.getAbi(nextState.contract).then((result) => {
-        console.log(result.abi)
         this.setState({ abi: result.abi });
       });
     }
@@ -116,7 +115,6 @@ class IndexContainer extends Component {
       this.state.action
       && this.state.action !== nextState.action
     ) {
-      console.log(this.state.action, nextState.action, nextState)
       const { abi, action } = nextState;
       const { structs } = abi;
       const struct = find(structs, { name: action });
@@ -203,7 +201,6 @@ class IndexContainer extends Component {
   }
 
   onResetContract = () => {
-    console.log("onResetContract")
     this.setState({
       abi: false,
       contract: false,
@@ -211,7 +208,6 @@ class IndexContainer extends Component {
   }
 
   onSelect = (e, { name, value }) => {
-    console.log(name, value)
     this.setState({ [name]: value })
   }
 
@@ -237,7 +233,6 @@ class IndexContainer extends Component {
         fieldsMatchSigner[field] = true;
       }
     });
-    console.log(action.data)
     this.setState({
       action: action.name,
       callback: {
@@ -310,7 +305,6 @@ class IndexContainer extends Component {
       tx,
       callback
     } = decoded;
-    console.log(this.state.abi)
     const contractOptions = knownContracts.map((contract) => (
       { key: contract, text: contract, value: contract }
     ));
@@ -358,7 +352,6 @@ class IndexContainer extends Component {
         <Segment loading={loading}>
           <Form
             as="div"
-            onSubmit={() => console.log("onsubmit")}
           >
             <SelectorContract
               contract={contract}
@@ -384,6 +377,18 @@ class IndexContainer extends Component {
                     <Tab panes={panes} />
                   </Segment>
                   <Segment attached tertiary>
+                    {(uriError)
+                      ? (
+                        <Message
+                          color="red"
+                          content={uriError}
+                          header="Transaction Error"
+                          icon="exclamation circle"
+                          size="large"
+                        />
+                      )
+                      : false
+                    }
                     <Button
                       color="blue"
                       content="Generate URI"
@@ -406,18 +411,6 @@ class IndexContainer extends Component {
                             href={uri}
                           />
                         </React.Fragment>
-                      )
-                      : false
-                    }
-                    {(uriError)
-                      ? (
-                        <Message
-                          color="red"
-                          content={uriError}
-                          header="Transaction Error"
-                          icon="exclamation circle"
-                          size="large"
-                        />
                       )
                       : false
                     }
