@@ -89,7 +89,7 @@ class IndexContainer extends Component {
     const { decode, props } = this;
     const { match } = props;
     if (match && match.params && match.params.uri) {
-      const uri = `eosio://${match.params.uri}`;
+      const uri = `eosio:${match.params.uri}`;
       this.setState({
         loading: true,
         uri
@@ -282,7 +282,7 @@ class IndexContainer extends Component {
         uri,
         uriError: false
       }, () => {
-        const data = uri.replace('eosio://', '');
+        const data = uri.replace('eosio:', '');
         this.props.history.replace(`/eosio-uri-builder/${data}`);
       });
 
