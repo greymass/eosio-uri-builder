@@ -21,28 +21,30 @@ import ReactJson from 'react-json-view';
 import FormCallback from '../components/form/callback';
 import FormFields from '../components/form/fields';
 import SelectorAction from '../components/selector/action';
+import SelectorBlockchain from '../components/selector/blockchain';
 import SelectorContract from '../components/selector/contract';
 import TabURI from '../components/tab/uri';
 
 const { SigningRequest } = require("eosio-uri");
 
 const eosjs = require('eosjs')
-const eos = eosjs({
+let eos = eosjs({
   httpEndpoint: 'https://eos.greymass.com'
 });
 
 const initialState = {
   abi: false,
-  action: 'transfer',
+  action: '',
   authorization: {
     actor: "............1",
     permission: "............1",
   },
+  blockchain: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
   callback: {
     background: false,
     url: '',
   },
-  contract: 'eosio.token',
+  contract: '',
   decoded: {},
   fields: {},
   fieldsMatchSigner: {},
@@ -57,6 +59,30 @@ const knownContracts = [
   'eosio.token',
   'eosio.forum',
 ];
+
+const chainAliases = [
+  ['EOS','aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'], // 0x01
+  ['TELOS','4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11'], // 0x02
+  ['JUNGLE','038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca'], // 0x03
+  ['KYLIN','5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191'], // 0x04
+  ['WORBLI','73647cde120091e0a4b85bced2f3cfdb3041e266cbbe95cee59b73235a1b3b6f'], // 0x05
+  ['BOS','d5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86'], // 0x06
+  ['MEETONE','cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422'], // 0x07
+  ['INSIGHTS','b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664'], // 0x08
+  ['BEOS','b912d19a6abd2b1b05611ae5be473355d64d95aeff0c09bedc8c166cd6468fe4'], // 0x09
+];
+
+const chainAPIs = {
+  'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906': 'https://eos.greymass.com',
+  '4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11': 'https://telos.greymass.com',
+  '038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca': 'http://jungle.cryptolions.io:18888',
+  '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191': 'https://kylin.eoscanada.com:443',
+  '73647cde120091e0a4b85bced2f3cfdb3041e266cbbe95cee59b73235a1b3b6f': 'https://api.worbli.io',
+  'd5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86': 'https://hapi.bos.eosrio.io',
+  'cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422': 'https://fullnode.meet.one',
+  'b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664': 'https://ireland-history.insights.network',
+  'b912d19a6abd2b1b05611ae5be473355d64d95aeff0c09bedc8c166cd6468fe4': 'https://api.beos.world',
+}
 
 // opts for the signing request
 const util = require('util');
@@ -98,6 +124,8 @@ class IndexContainer extends Component {
       });
     }
     if (this.state.contract && !this.state.abi) {
+      console.log("loading", this.state.contract)
+      console.log("from", this.state.blockchain)
       eos.getAbi(this.state.contract).then((result) => {
         this.setState({ abi: result.abi });
       });
@@ -207,8 +235,23 @@ class IndexContainer extends Component {
     });
   }
 
+  onResetBlockchain = () => {
+    this.setState({
+      abi: false,
+      blockchain: false,
+      contract: false,
+    });
+  }
+
   onSelect = (e, { name, value }) => {
-    this.setState({ [name]: value })
+    this.setState({ [name]: value });
+  }
+
+  onSelectBlockchain = (e, { name, value }) => {
+    this.setState({ [name]: value }, () => {
+      const httpEndpoint = chainAPIs[value];
+      eos = eosjs({ httpEndpoint });
+    });
   }
 
   decode = async (uri = false) => {
@@ -216,40 +259,51 @@ class IndexContainer extends Component {
       authorization
     } = this.state;
     const decoded = SigningRequest.from(uri, opts);
-    const actions = await decoded.getActions();
-    const head = (await eos.getInfo(true)).head_block_num;
-    const block = await eos.getBlock(head);
-    const tx = await decoded.getTransaction(authorization, block);
-    const cb = decoded.data.callback.url;
-    const action = actions[0];
-    const fieldsMatchSigner = {};
-    const fieldsPromptSigner = {};
-    Object.keys(action.data).forEach((field) => {
-      const data = action.data[field];
-      if (data === '............2') {
-        fieldsPromptSigner[field] = true;
-      }
-      if (data === '............1') {
-        fieldsMatchSigner[field] = true;
-      }
-    });
-    this.setState({
-      action: action.name,
-      callback: {
-        background: false,
-        url: cb
-      },
-      contract: action.account,
-      decoded: {
-        actions,
-        tx,
-        callback: cb,
-      },
-      fields: Object.assign({}, action.data),
-      fieldsMatchSigner,
-      fieldsPromptSigner,
-      loading: false
-    });
+    const blockchain = decoded.getChainId();
+    const httpEndpoint = chainAPIs[blockchain];
+    eos = eosjs({ httpEndpoint });
+    try {
+      const actions = await decoded.getActions();
+      const head = (await eos.getInfo(true)).head_block_num;
+      const block = await eos.getBlock(head);
+      const tx = await decoded.getTransaction(authorization, block);
+      const cb = decoded.data.callback.url;
+      const action = actions[0];
+      const fieldsMatchSigner = {};
+      const fieldsPromptSigner = {};
+      Object.keys(action.data).forEach((field) => {
+        const data = action.data[field];
+        if (data === '............2') {
+          fieldsPromptSigner[field] = true;
+        }
+        if (data === '............1') {
+          fieldsMatchSigner[field] = true;
+        }
+      });
+      this.setState({
+        action: action.name,
+        blockchain,
+        callback: {
+          background: false,
+          url: cb
+        },
+        contract: action.account,
+        decoded: {
+          actions,
+          tx,
+          callback: cb,
+        },
+        fields: Object.assign({}, action.data),
+        fieldsMatchSigner,
+        fieldsPromptSigner,
+        loading: false
+      });
+    } catch (err) {
+      this.setState({
+        blockchain,
+        loading: false
+      });
+    }
   }
 
   generate = async () => {
@@ -257,19 +311,21 @@ class IndexContainer extends Component {
       abi,
       action,
       authorization,
+      blockchain,
       callback,
       contract,
       fields
     } = this.state;
     try {
       const req = await SigningRequest.create({
-        callback,
         actions: [{
           account: contract,
           name: action,
           authorization: [authorization],
           data: fields
-        }]
+        }],
+        callback,
+        chainId: blockchain,
       }, opts);
       const uri = req.encode();
       this.decode(uri);
@@ -288,10 +344,15 @@ class IndexContainer extends Component {
     }
   }
 
+  onBlockchainSelect = (e, { name, value }) => {
+    this.setState({ [name]: value })
+  }
+
   render() {
     const {
       abi,
       action,
+      blockchain,
       contract,
       decoded,
       fieldsMatchSigner,
@@ -307,6 +368,9 @@ class IndexContainer extends Component {
     } = decoded;
     const contractOptions = knownContracts.map((contract) => (
       { key: contract, text: contract, value: contract }
+    ));
+    const blockchainOptions = chainAliases.map(([chainName, chainId]) => (
+      { key: chainId, text: chainName, value: chainId }
     ));
     let fields;
     if (abi && contract && action) {
@@ -349,72 +413,86 @@ class IndexContainer extends Component {
         <Header>
           EOSIO uri-builder
         </Header>
-        <Segment loading={loading}>
+        <Segment basic loading={loading}>
           <Form
             as="div"
           >
-            <SelectorContract
-              contract={contract}
-              contractOptions={contractOptions}
-              onChange={this.onSelect}
-              onReset={this.onResetContract}
+            <SelectorBlockchain
+              blockchain={blockchain}
+              blockchainOptions={blockchainOptions}
+              chainAliases={chainAliases}
+              onChange={this.onSelectBlockchain}
+              onReset={this.onResetBlockchain}
             />
-            {(abi)
-              ? (
-                <SelectorAction
-                  abi={abi}
-                  action={action}
-                  contract={contract}
-                  onChange={this.onSelect}
-                />
-              )
-              : false
-            }
-            {(action && fields)
+            {(blockchain)
               ? (
                 <React.Fragment>
-                  <Segment attached secondary>
-                    <Tab panes={panes} />
-                  </Segment>
-                  <Segment attached tertiary>
-                    {(uriError)
-                      ? (
-                        <Message
-                          color="red"
-                          content={uriError}
-                          header="Transaction Error"
-                          icon="exclamation circle"
-                          size="large"
-                        />
-                      )
-                      : false
-                    }
-                    <Button
-                      color="blue"
-                      content="Generate URI"
-                      icon="certificate"
-                      onClick={this.generate}
-                    />
-                    {(uri)
-                      ? (
-                        <React.Fragment>
-                          <Header>
-                            Resulting URI
-                          </Header>
-                          <TextArea value={uri} />
-                          <Divider />
+                  <SelectorContract
+                    contract={contract}
+                    contractOptions={contractOptions}
+                    onChange={this.onSelect}
+                    onReset={this.onResetContract}
+                  />
+                  {(abi)
+                    ? (
+                      <SelectorAction
+                        abi={abi}
+                        action={action}
+                        contract={contract}
+                        onChange={this.onSelect}
+                      />
+                    )
+                    : false
+                  }
+                  {(action && fields)
+                    ? (
+                      <React.Fragment>
+                        <Segment attached secondary>
+                          <Tab panes={panes} />
+                        </Segment>
+                        <Segment attached tertiary>
+                          {(uriError)
+                            ? (
+                              <Message
+                                color="red"
+                                content={uriError}
+                                header="Transaction Error"
+                                icon="exclamation circle"
+                                size="large"
+                              />
+                            )
+                            : false
+                          }
                           <Button
-                            as="a"
-                            color="green"
-                            content="Trigger URI in default handler"
-                            icon="external"
-                            href={uri}
+                            color="blue"
+                            content="Generate URI"
+                            icon="certificate"
+                            onClick={this.generate}
                           />
-                        </React.Fragment>
-                      )
-                      : false
-                    }
-                  </Segment>
+                          {(uri)
+                            ? (
+                              <React.Fragment>
+                                <Header>
+                                  Resulting URI
+                                </Header>
+                                <TextArea value={uri} />
+                                <Divider />
+                                <Button
+                                  as="a"
+                                  color="green"
+                                  content="Trigger URI in default handler"
+                                  icon="external"
+                                  href={uri}
+                                />
+                              </React.Fragment>
+                            )
+                            : false
+                          }
+                        </Segment>
+                      </React.Fragment>
+                    )
+                    : false
+                  }
                 </React.Fragment>
               )
               : false

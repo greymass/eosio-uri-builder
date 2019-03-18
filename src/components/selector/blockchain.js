@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { find } from 'lodash';
 
 import {
   Button,
@@ -11,47 +12,49 @@ import {
 class SelectorContract extends Component {
   render() {
     const {
-      contract,
-      contractOptions,
+      blockchain,
+      blockchainOptions,
+      chainAliases,
       onChange,
       onReset,
     } = this.props;
-    return (!contract)
+    const chain = find(chainAliases, function(c) { return c[1] === blockchain }) || [];
+    return (!blockchain)
       ? (
         <React.Fragment>
-          <Header inverted attached>
-            Select or enter a contract from which to generate a transaction:
+          <Header inverted attached='top'>
+            Select which blockchain this transaction is intended for or enter a chain ID:
           </Header>
           <Segment attached='bottom'>
             <Form.Field>
               <Dropdown
                 allowAdditions
                 fluid
-                name="contract"
-                options={contractOptions}
+                name="blockchain"
+                options={blockchainOptions}
                 onChange={onChange}
                 search
                 selection
                 selectOnNavigation={false}
-                value={contract}
+                value={blockchain}
               />
             </Form.Field>
           </Segment>
         </React.Fragment>
       )
       : (
-        <Segment clearing attached>
+        <Segment clearing attached='top'>
           <Header>
             <Button
               color="blue"
-              content="Change Contract"
+              content="Change Blockchain"
               floated="right"
               onClick={onReset}
               size="small"
             />
-            Contract
+            Blockchain: {chain[0] || 'Unknown'}
             <Header.Subheader>
-              <strong>{contract}</strong>
+              <strong>{blockchain}</strong>
             </Header.Subheader>
           </Header>
         </Segment>
