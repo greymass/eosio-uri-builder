@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/eosio-uri-builder/static/media/icons.af7ae505.woff2"
   },
   {
-    "revision": "ea6c79ccb1593676a315",
+    "revision": "26837f8f278574b2c27a",
     "url": "/eosio-uri-builder/static/css/main.78bcd1bf.chunk.css"
   },
   {
@@ -20,16 +20,16 @@ self.__precacheManifest = [
     "url": "/eosio-uri-builder/static/media/flags.9c74e172.png"
   },
   {
-    "revision": "ea6c79ccb1593676a315",
-    "url": "/eosio-uri-builder/static/js/main.ea6c79cc.chunk.js"
-  },
-  {
-    "revision": "674f50d287a8c48dc19ba404d20fe713",
-    "url": "/eosio-uri-builder/static/media/icons.674f50d2.eot"
+    "revision": "26837f8f278574b2c27a",
+    "url": "/eosio-uri-builder/static/js/main.26837f8f.chunk.js"
   },
   {
     "revision": "fee66e712a8a08eef5805a46892932ad",
     "url": "/eosio-uri-builder/static/media/icons.fee66e71.woff"
+  },
+  {
+    "revision": "674f50d287a8c48dc19ba404d20fe713",
+    "url": "/eosio-uri-builder/static/media/icons.674f50d2.eot"
   },
   {
     "revision": "b06871f281fee6b241d60582ae9369b9",
@@ -40,7 +40,7 @@ self.__precacheManifest = [
     "url": "/eosio-uri-builder/static/media/icons.912ec66d.svg"
   },
   {
-    "revision": "22131618f358033cf10d2cff7c27d993",
+    "revision": "70f8930c6dcda1656d21bd0215be5d01",
     "url": "/eosio-uri-builder/index.html"
   }
 ];
