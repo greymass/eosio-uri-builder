@@ -32,6 +32,14 @@ class FormCallback extends Component {
               onChange={onChange}
             />
           </Form.Field>
+          <Form.Field>
+            <Form.Checkbox
+              checked={values.background}
+              label="Process callback in background"
+              name="background"
+              onChange={onChange}
+            />
+          </Form.Field>
         </Segment>
         <Segment inverted basic>
           <Header>

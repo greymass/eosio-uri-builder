@@ -35,7 +35,7 @@ class FormFields extends Component {
         label={label}
         name={name}
         onChange={onChange}
-        value={value}
+        defaultValue={(value instanceof Object) ? JSON.stringify(value) : value}
       />
     );
     // an array of values

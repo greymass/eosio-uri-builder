@@ -267,7 +267,7 @@ class IndexContainer extends Component {
       const head = (await eos.getInfo(true)).head_block_num;
       const block = await eos.getBlock(head);
       const tx = await decoded.getTransaction(authorization, block);
-      const cb = decoded.data.callback.url;
+      const { callback } = decoded.data;
       const action = actions[0];
       const fieldsMatchSigner = {};
       const fieldsPromptSigner = {};
@@ -283,15 +283,12 @@ class IndexContainer extends Component {
       this.setState({
         action: action.name,
         blockchain,
-        callback: {
-          background: false,
-          url: cb
-        },
+        callback,
         contract: action.account,
         decoded: {
           actions,
           tx,
-          callback: cb,
+          callback,
         },
         fields: Object.assign({}, action.data),
         fieldsMatchSigner,
