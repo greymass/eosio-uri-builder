@@ -4,7 +4,7 @@
   "homepage": "https://greymass.github.io/eosio-uri-builder",
   "private": true,
   "dependencies": {
-    "eosio-uri": "0.0.4",
+    "eosio-uri": "0.0.5",
     "eosjs": "^16.0.9",
     "gh-pages": "^2.0.1",
     "react": "^16.7.0",
