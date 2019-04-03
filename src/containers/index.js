@@ -169,11 +169,19 @@ class IndexContainer extends Component {
   }
 
   onChangeField = (e, { name, value }) => {
-    this.setState({
-      fields: Object.assign({}, this.state.fields, {
-        [name]: value
-      })
-    });
+    if (!isError(attempt(JSON.parse, value))) {
+      this.setState({
+        fields: Object.assign({}, this.state.fields, {
+          [name]: JSON.parse(value)
+        })
+      });
+    } else {
+      this.setState({
+        fields: Object.assign({}, this.state.fields, {
+          [name]: String(value)
+        })
+      });
+    }
   }
 
   onChangeMatchSigner = (e, { name }) => {
