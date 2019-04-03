@@ -259,7 +259,7 @@ class IndexContainer extends Component {
       authorization
     } = this.state;
     const decoded = SigningRequest.from(uri, opts);
-    const blockchain = decoded.getChainId();
+    const blockchain = decoded.getChainId().toLowerCase();
     const httpEndpoint = chainAPIs[blockchain];
     eos = eosjs({ httpEndpoint });
     try {
