@@ -178,7 +178,7 @@ class IndexContainer extends Component {
     } else {
       this.setState({
         fields: Object.assign({}, this.state.fields, {
-          [name]: String(value)
+          [name]: value
         })
       });
     }

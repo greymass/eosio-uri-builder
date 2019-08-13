@@ -43,11 +43,19 @@ class FormFields extends Component {
       let options = [];
       fieldType = 'multi';
       if (value && value.length > 0) {
-        options = value.map((option) => ({
-          key: option,
-          value: option,
-          text: option
-        }))
+        if(Array.isArray(value)) {
+          options = value.map((option) => ({
+            key: option,
+            value: option,
+            text: option
+          }))
+        } else {
+          options = [{
+            key: value,
+            value: value,
+            text: value,
+          }];
+        }
       }
       defaultInput = (
         <Form.Select
@@ -76,7 +84,7 @@ class FormFields extends Component {
       )
     }
     return (
-      <Segment attached secondary={(idx % 2)}>
+      <Segment attached key={name} secondary={!!(idx % 2)}>
         <Form.Field key={name}>
           {defaultInput}
           {(type === 'name' || (alias && alias.type === 'name'))
