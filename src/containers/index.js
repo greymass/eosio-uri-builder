@@ -18,6 +18,7 @@ import {
 
 import ReactJson from 'react-json-view';
 
+import FormAuthorization from '../components/form/authorization';
 import FormCallback from '../components/form/callback';
 import FormFields from '../components/form/fields';
 import SelectorAction from '../components/selector/action';
@@ -47,7 +48,10 @@ const initialState = {
   contract: '',
   decoded: {},
   fields: {},
-  fieldsMatchSigner: {},
+  fieldsMatchSigner: {
+    'authorization-actor': true,
+    'authorization-permission': true,
+  },
   fieldsPromptSigner: {},
   loading: false,
   uri: false,
@@ -236,6 +240,41 @@ class IndexContainer extends Component {
     return false;
   }
 
+  onChangeAuthorization = (e, { name, value }) => {
+    this.setState({
+      authorization: Object.assign({}, this.state.authorization, {
+        [name]: value
+      })
+    });
+  }
+
+  onChangeAuthorizationMatchSigner = (e, { name }) => {
+    const {
+      authorization,
+      fieldsMatchSigner,
+      fieldsPromptSigner
+    } = this.state;
+    const newValue = !(fieldsMatchSigner[`authorization-${name}`] || false)
+    const newState = {
+      // Set the field to the placeholder value
+      authorization: Object.assign({}, authorization, {
+        [name]: (newValue) ? '............1' : ''
+      }),
+      // Set the boolean value
+      fieldsMatchSigner: Object.assign({}, fieldsMatchSigner, {
+        [`authorization-${name}`]: newValue
+      })
+    }
+    if (fieldsPromptSigner[name]) {
+      newState['fieldsPromptSigner'] = Object.assign({}, fieldsPromptSigner, {
+        [`authorization-${name}`]: false
+      })
+    }
+    this.setState(newState);
+    e.preventDefault();
+    return false;
+  }
+
   onResetContract = () => {
     this.setState({
       abi: false,
@@ -279,6 +318,14 @@ class IndexContainer extends Component {
       const action = actions[0];
       const fieldsMatchSigner = {};
       const fieldsPromptSigner = {};
+      action.authorization.forEach((auth) => {
+        if (auth.actor === '............1') {
+          fieldsMatchSigner[`authorization-actor`] = true;
+        }
+        if (auth.permission === '............1') {
+          fieldsMatchSigner[`authorization-permission`] = true;
+        }
+      });
       Object.keys(action.data).forEach((field) => {
         const data = action.data[field];
         if (data === '............2') {
@@ -357,6 +404,7 @@ class IndexContainer extends Component {
     const {
       abi,
       action,
+      authorization,
       blockchain,
       contract,
       decoded,
@@ -396,6 +444,15 @@ class IndexContainer extends Component {
           onChangeMatchSigner={this.onChangeMatchSigner}
           onChangePromptSigner={this.onChangePromptSigner}
           values={this.state.fields}
+        />
+      ) },
+      { menuItem: 'Authorization', render: () => (
+        <FormAuthorization
+          authorization={authorization}
+          fieldsMatchSigner={fieldsMatchSigner}
+          onChange={this.onChangeAuthorization}
+          onChangeAuthorizationMatchSigner={this.onChangeAuthorizationMatchSigner}
+          values={this.state.callback}
         />
       ) },
       { menuItem: 'Callback', render: () => (
