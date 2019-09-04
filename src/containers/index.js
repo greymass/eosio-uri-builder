@@ -337,6 +337,7 @@ class IndexContainer extends Component {
       });
       this.setState({
         action: action.name,
+        authorization: action.authorization[0],
         blockchain,
         callback,
         contract: action.account,
