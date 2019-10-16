@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/eosio-uri-builder/static/media/icons.af7ae505.woff2"
   },
   {
-    "revision": "0aa3151124aeac8710d9",
+    "revision": "034290121814b69c66d5",
     "url": "/eosio-uri-builder/static/css/main.57b4b452.chunk.css"
   },
   {
@@ -20,8 +20,8 @@ self.__precacheManifest = [
     "url": "/eosio-uri-builder/static/media/flags.9c74e172.png"
   },
   {
-    "revision": "0aa3151124aeac8710d9",
-    "url": "/eosio-uri-builder/static/js/main.0aa31511.chunk.js"
+    "revision": "034290121814b69c66d5",
+    "url": "/eosio-uri-builder/static/js/main.03429012.chunk.js"
   },
   {
     "revision": "fee66e712a8a08eef5805a46892932ad",
@@ -40,7 +40,7 @@ self.__precacheManifest = [
     "url": "/eosio-uri-builder/static/media/icons.912ec66d.svg"
   },
   {
-    "revision": "b1cc69e850fd6faa0c535d30dc178377",
+    "revision": "c0ee5bb479e34480855cf691a72a0ffe",
     "url": "/eosio-uri-builder/index.html"
   }
 ];
