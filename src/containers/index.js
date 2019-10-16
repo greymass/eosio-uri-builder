@@ -40,6 +40,7 @@ const initialState = {
     actor: "............1",
     permission: "............1",
   },
+  billFirstAuthorizer: false,
   blockchain: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
   callback: {
     background: false,
@@ -79,12 +80,12 @@ const chainAliases = [
 const chainAPIs = {
   'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906': 'https://eos.greymass.com',
   '4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11': 'https://telos.greymass.com',
-  'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473': 'http://junglehistory.cryptolions.io:18888',
+  'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473': 'https://jungle.greymass.com',
   '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191': 'https://kylin.eoscanada.com:443',
   '73647cde120091e0a4b85bced2f3cfdb3041e266cbbe95cee59b73235a1b3b6f': 'https://api.worbli.io',
   'd5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86': 'https://hapi.bos.eosrio.io',
   'cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422': 'https://fullnode.meet.one',
-  'b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664': 'https://ireland-history.insights.network',
+  'b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664': 'https://instar.greymass.com',
   'b912d19a6abd2b1b05611ae5be473355d64d95aeff0c09bedc8c166cd6468fe4': 'https://api.beos.world',
 }
 
@@ -275,6 +276,8 @@ class IndexContainer extends Component {
     return false;
   }
 
+  onChangeBillFirst = () => this.setState({ billFirstAuthorizer: !this.state.billFirstAuthorizer })
+
   onResetContract = () => {
     this.setState({
       abi: false,
@@ -318,7 +321,7 @@ class IndexContainer extends Component {
       const action = actions[0];
       const fieldsMatchSigner = {};
       const fieldsPromptSigner = {};
-      action.authorization.forEach((auth) => {
+      action.authorization.forEach((auth, idx) => {
         if (auth.actor === '............1') {
           fieldsMatchSigner[`authorization-actor`] = true;
         }
@@ -335,9 +338,18 @@ class IndexContainer extends Component {
           fieldsMatchSigner[field] = true;
         }
       });
+      let billFirstAuthorizer = (action.authorization.length === 2);
+      const combinedAuthorization = (billFirstAuthorizer) ? {
+        ...action.authorization[1],
+        'actor-paying': action.authorization[0].actor,
+        'permission-paying': action.authorization[0].permission,
+      } : {
+        ...action.authorization[0]
+      }
       this.setState({
         action: action.name,
-        authorization: action.authorization[0],
+        authorization: combinedAuthorization,
+        billFirstAuthorizer,
         blockchain,
         callback,
         contract: action.account,
@@ -364,19 +376,41 @@ class IndexContainer extends Component {
       abi,
       action,
       authorization,
+      billFirstAuthorizer,
       blockchain,
       callback,
       contract,
       fields
     } = this.state;
     try {
+      const combinedAuthorization = [{
+        actor: authorization.actor,
+        permission: authorization.permission,
+      }];
+      if (billFirstAuthorizer) {
+        combinedAuthorization.unshift({
+          actor: authorization['actor-paying'],
+          permission: authorization['permission-paying'],
+        })
+      }
       const req = await SigningRequest.create({
-        actions: [{
+        // claim: gWNgZACDVwahDZdNY2Jf-rgwQoUYYDQHXADIAAA
+        action: {
           account: contract,
           name: action,
-          authorization: [authorization],
+          authorization: combinedAuthorization,
           data: fields
-        }],
+        },
+        // claim: gWNgZGRkAIFXBqENl01jYl_6uEBFGBhgNAdcAMgAAA
+        // actions: [{
+        //   account: contract,
+        //   name: action,
+        //   authorization: [authorization],
+        //   data: fields
+        // }],
+        // transaction: {
+        //
+        // }
         callback,
         chainId: blockchain,
       }, opts);
@@ -389,7 +423,6 @@ class IndexContainer extends Component {
         const data = uri.replace('eosio:', '');
         this.props.history.replace(`/eosio-uri-builder/${data}`);
       });
-
     } catch(err) {
       this.setState({
         uriError: err.toString()
@@ -406,6 +439,7 @@ class IndexContainer extends Component {
       abi,
       action,
       authorization,
+      billFirstAuthorizer,
       blockchain,
       contract,
       decoded,
@@ -450,9 +484,11 @@ class IndexContainer extends Component {
       { menuItem: 'Authorization', render: () => (
         <FormAuthorization
           authorization={authorization}
+          billFirstAuthorizer={billFirstAuthorizer}
           fieldsMatchSigner={fieldsMatchSigner}
           onChange={this.onChangeAuthorization}
           onChangeAuthorizationMatchSigner={this.onChangeAuthorizationMatchSigner}
+          onChangeBillFirst={this.onChangeBillFirst}
           values={this.state.callback}
         />
       ) },
