@@ -21,6 +21,7 @@ import ReactJson from 'react-json-view';
 import FormAuthorization from '../components/form/authorization';
 import FormCallback from '../components/form/callback';
 import FormFields from '../components/form/fields';
+import FormOptions from '../components/form/options';
 import SelectorAction from '../components/selector/action';
 import SelectorBlockchain from '../components/selector/blockchain';
 import SelectorContract from '../components/selector/contract';
@@ -42,6 +43,7 @@ const initialState = {
   },
   billFirstAuthorizer: false,
   blockchain: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
+  broadcast: true,
   callback: {
     background: false,
     url: '',
@@ -163,6 +165,12 @@ class IndexContainer extends Component {
         });
       }
     }
+  }
+
+  onChangeOption = (e, { checked, name, value }) => {
+    this.setState({
+      [name]: value || checked
+    });
   }
 
   onChangeCallback = (e, { checked, name, value }) => {
@@ -309,6 +317,7 @@ class IndexContainer extends Component {
       authorization
     } = this.state;
     const decoded = SigningRequest.from(uri, opts);
+    const broadcast = decoded.data.broadcast;
     const blockchain = decoded.getChainId().toLowerCase();
     const httpEndpoint = chainAPIs[blockchain];
     eos = eosjs({ httpEndpoint });
@@ -351,6 +360,7 @@ class IndexContainer extends Component {
         authorization: combinedAuthorization,
         billFirstAuthorizer,
         blockchain,
+        broadcast,
         callback,
         contract: action.account,
         decoded: {
@@ -378,6 +388,7 @@ class IndexContainer extends Component {
       authorization,
       billFirstAuthorizer,
       blockchain,
+      broadcast,
       callback,
       contract,
       fields
@@ -411,6 +422,7 @@ class IndexContainer extends Component {
         // transaction: {
         //
         // }
+        broadcast,
         callback,
         chainId: blockchain,
       }, opts);
@@ -496,6 +508,12 @@ class IndexContainer extends Component {
         <FormCallback
           onChange={this.onChangeCallback}
           values={this.state.callback}
+        />
+      ) },
+      { menuItem: 'Options', render: () => (
+        <FormOptions
+          onChange={this.onChangeOption}
+          values={this.state}
         />
       ) },
     ];
