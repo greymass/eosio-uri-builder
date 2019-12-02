@@ -73,9 +73,11 @@ class FormAuthorization extends Component {
       billFirstAuthorizer,
       fields,
       fieldsMatchSigner,
+      greymassnoop,
       onChange,
       onChangeAuthorizationMatchSigner,
       onChangeBillFirst,
+      onChangeNoop,
       values,
     } = this.props;
     const data = [
@@ -84,7 +86,7 @@ class FormAuthorization extends Component {
         permission: authorization['permission'],
       }
     ];
-    if (billFirstAuthorizer) {
+    if (billFirstAuthorizer && !greymassnoop) {
       data.unshift({
         actor: authorization['actor-paying'],
         permission: authorization['permission-paying'],
@@ -109,7 +111,16 @@ class FormAuthorization extends Component {
             </Form.Field>
             {(billFirstAuthorizer)
               ? (
-                ['actor-paying', 'permission-paying'].map((field, idx) => this.getInput(field, idx, false))
+                <React.Fragment>
+                  <Form.Checkbox
+                    checked={greymassnoop}
+                    label="Use greymassnoop method?"
+                    name="greymassnoop"
+                    onChange={onChangeNoop}
+                  />
+                  {['actor-paying', 'permission-paying'].map((field, idx) => this.getInput(field, idx, false))}
+                </React.Fragment>
+
               )
               : false
             }

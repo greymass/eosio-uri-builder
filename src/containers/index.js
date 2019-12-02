@@ -56,6 +56,7 @@ const initialState = {
     'authorization-permission': true,
   },
   fieldsPromptSigner: {},
+  greymassnoop: false,
   loading: false,
   uri: false,
   uriError: false
@@ -285,6 +286,7 @@ class IndexContainer extends Component {
   }
 
   onChangeBillFirst = () => this.setState({ billFirstAuthorizer: !this.state.billFirstAuthorizer })
+  onChangeNoop = () => this.setState({ greymassnoop: !this.state.greymassnoop })
 
   onResetContract = () => {
     this.setState({
@@ -327,7 +329,10 @@ class IndexContainer extends Component {
       const block = await eos.getBlock(head);
       const tx = await decoded.getTransaction(authorization, block);
       const { callback } = decoded.data;
-      const action = actions[0];
+      let action = actions[0];
+      if (action.account === 'greymassnoop') {
+        action = actions[1]
+      }
       const fieldsMatchSigner = {};
       const fieldsPromptSigner = {};
       action.authorization.forEach((auth, idx) => {
@@ -391,34 +396,47 @@ class IndexContainer extends Component {
       broadcast,
       callback,
       contract,
-      fields
+      fields,
+      greymassnoop,
     } = this.state;
     try {
       const combinedAuthorization = [{
         actor: authorization.actor,
         permission: authorization.permission,
       }];
-      if (billFirstAuthorizer) {
+      if (billFirstAuthorizer && !greymassnoop) {
         combinedAuthorization.unshift({
           actor: authorization['actor-paying'],
           permission: authorization['permission-paying'],
         })
       }
+      const actions = [{
+        account: contract,
+        name: action,
+        authorization: [authorization],
+        data: fields
+      }];
+      if (greymassnoop) {
+        actions.unshift({
+          account: 'greymassnoop',
+          name: 'noop',
+          authorization: [{
+            actor: authorization['actor-paying'],
+            permission: authorization['permission-paying'],
+          }],
+          data: {}
+        })
+      }
       const req = await SigningRequest.create({
         // claim: gWNgZACDVwahDZdNY2Jf-rgwQoUYYDQHXADIAAA
-        action: {
-          account: contract,
-          name: action,
-          authorization: combinedAuthorization,
-          data: fields
-        },
-        // claim: gWNgZGRkAIFXBqENl01jYl_6uEBFGBhgNAdcAMgAAA
-        // actions: [{
+        // action: {
         //   account: contract,
         //   name: action,
-        //   authorization: [authorization],
+        //   authorization: combinedAuthorization,
         //   data: fields
-        // }],
+        // },
+        // claim: gWNgZGRkAIFXBqENl01jYl_6uEBFGBhgNAdcAMgAAA
+        actions,
         // transaction: {
         //
         // }
@@ -457,6 +475,7 @@ class IndexContainer extends Component {
       decoded,
       fieldsMatchSigner,
       fieldsPromptSigner,
+      greymassnoop,
       loading,
       uri,
       uriError,
@@ -498,9 +517,11 @@ class IndexContainer extends Component {
           authorization={authorization}
           billFirstAuthorizer={billFirstAuthorizer}
           fieldsMatchSigner={fieldsMatchSigner}
+          greymassnoop={greymassnoop}
           onChange={this.onChangeAuthorization}
           onChangeAuthorizationMatchSigner={this.onChangeAuthorizationMatchSigner}
           onChangeBillFirst={this.onChangeBillFirst}
+          onChangeNoop={this.onChangeNoop}
           values={this.state.callback}
         />
       ) },
