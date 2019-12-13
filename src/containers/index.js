@@ -27,7 +27,7 @@ import SelectorBlockchain from '../components/selector/blockchain';
 import SelectorContract from '../components/selector/contract';
 import TabURI from '../components/tab/uri';
 
-const { SigningRequest } = require("eosio-uri");
+const { SigningRequest } = require("eosio-signing-request");
 
 const eosjs = require('eosjs')
 let eos = eosjs({
@@ -123,7 +123,7 @@ class IndexContainer extends Component {
     const { decode, props } = this;
     const { match } = props;
     if (match && match.params && match.params.uri) {
-      const uri = `eosio:${match.params.uri}`;
+      const uri = `esr://${match.params.uri}`;
       this.setState({
         loading: true,
         uri
@@ -324,10 +324,14 @@ class IndexContainer extends Component {
     const httpEndpoint = chainAPIs[blockchain];
     eos = eosjs({ httpEndpoint });
     try {
-      const actions = await decoded.getActions();
       const head = (await eos.getInfo(true)).head_block_num;
       const block = await eos.getBlock(head);
-      const tx = await decoded.getTransaction(authorization, block);
+      // Force 1hr expiration of txs, shouldn't hit
+      block.expire_seconds = 60 * 60 * 1;
+      const abis = await decoded.fetchAbis();
+      const resolved = decoded.resolve(abis, authorization, block);
+      const { actions } = resolved.transaction;
+      const tx = resolved.transaction
       const { callback } = decoded.data;
       let action = actions[0];
       if (action.account === 'greymassnoop') {
@@ -379,6 +383,7 @@ class IndexContainer extends Component {
         loading: false
       });
     } catch (err) {
+      console.log(err)
       this.setState({
         blockchain,
         loading: false
@@ -450,7 +455,7 @@ class IndexContainer extends Component {
         uri,
         uriError: false
       }, () => {
-        const data = uri.replace('eosio:', '');
+        const data = uri.replace('esr://', '');
         this.props.history.replace(`/eosio-uri-builder/${data}`);
       });
     } catch(err) {
