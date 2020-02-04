@@ -43,11 +43,9 @@ const initialState = {
   },
   billFirstAuthorizer: false,
   blockchain: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
+  background: true,
   broadcast: true,
-  callback: {
-    background: false,
-    url: '',
-  },
+  callback: '',
   contract: '',
   decoded: {},
   fields: {},
@@ -175,9 +173,15 @@ class IndexContainer extends Component {
   }
 
   onChangeCallback = (e, { checked, name, value }) => {
+    const { request } = this.state;
+    const updated = { request };
     this.setState({
-      callback: Object.assign({}, this.state.callback, {
-        [name]: value || checked
+      [name]: value || checked,
+    }, () => {
+      const { background, callback } = this.state
+      request.setCallback(callback, background);
+      this.setState({
+        request,
       })
     });
   }
@@ -285,8 +289,12 @@ class IndexContainer extends Component {
     return false;
   }
 
-  onChangeBillFirst = () => this.setState({ billFirstAuthorizer: !this.state.billFirstAuthorizer })
-  onChangeNoop = () => this.setState({ greymassnoop: !this.state.greymassnoop })
+  onChangeBillFirst = () => this.setState({
+    billFirstAuthorizer: !this.state.billFirstAuthorizer,
+  })
+  onChangeNoop = () => this.setState({
+    greymassnoop: !this.state.greymassnoop
+  })
 
   onResetContract = () => {
     this.setState({
@@ -319,7 +327,7 @@ class IndexContainer extends Component {
       authorization
     } = this.state;
     const decoded = SigningRequest.from(uri, opts);
-    const broadcast = decoded.data.broadcast;
+    const broadcast = decoded.shouldBroadcast();
     const blockchain = decoded.getChainId().toLowerCase();
     const httpEndpoint = chainAPIs[blockchain];
     eos = eosjs({ httpEndpoint });
@@ -332,10 +340,19 @@ class IndexContainer extends Component {
       const resolved = decoded.resolve(abis, authorization, block);
       const { actions } = resolved.transaction;
       const tx = resolved.transaction
-      const { callback } = decoded.data;
+      const { background, url: callback } = resolved.getCallback(['']);
       let action = actions[0];
-      if (action.account === 'greymassnoop') {
+      let greymassnoop = false;
+      let noop = false;
+      let billFirstAuthorizer = false;
+      if (
+        (action.account === 'greymassfuel' && action.name === 'cosign')
+        || (action.account === 'greymassnoop' && action.name === 'noop')
+      ) {
         action = actions[1]
+        billFirstAuthorizer = true
+        greymassnoop = true
+        noop = actions[0]
       }
       const fieldsMatchSigner = {};
       const fieldsPromptSigner = {};
@@ -356,17 +373,17 @@ class IndexContainer extends Component {
           fieldsMatchSigner[field] = true;
         }
       });
-      let billFirstAuthorizer = (action.authorization.length === 2);
       const combinedAuthorization = (billFirstAuthorizer) ? {
-        ...action.authorization[1],
-        'actor-paying': action.authorization[0].actor,
-        'permission-paying': action.authorization[0].permission,
+        ...action.authorization[0],
+        'actor-paying': noop.authorization[0].actor,
+        'permission-paying': noop.authorization[0].permission,
       } : {
         ...action.authorization[0]
       }
       this.setState({
         action: action.name,
         authorization: combinedAuthorization,
+        background,
         billFirstAuthorizer,
         blockchain,
         broadcast,
@@ -380,7 +397,9 @@ class IndexContainer extends Component {
         fields: Object.assign({}, action.data),
         fieldsMatchSigner,
         fieldsPromptSigner,
-        loading: false
+        greymassnoop,
+        loading: false,
+        request: decoded,
       });
     } catch (err) {
       console.log(err)
@@ -396,6 +415,7 @@ class IndexContainer extends Component {
       abi,
       action,
       authorization,
+      background,
       billFirstAuthorizer,
       blockchain,
       broadcast,
@@ -431,6 +451,17 @@ class IndexContainer extends Component {
           }],
           data: {}
         })
+        // actions.unshift({
+        //   account: 'greymassfuel',
+        //   name: 'cosign',
+        //   authorization: [{
+        //     actor: authorization['actor-paying'],
+        //     permission: authorization['permission-paying'],
+        //   }],
+        //   data: {
+        //     info: null
+        //   }
+        // })
       }
       const req = await SigningRequest.create({
         // claim: gWNgZACDVwahDZdNY2Jf-rgwQoUYYDQHXADIAAA
@@ -446,7 +477,10 @@ class IndexContainer extends Component {
         //
         // }
         broadcast,
-        callback,
+        callback: {
+          background,
+          url: callback,
+        },
         chainId: blockchain,
       }, opts);
       const uri = req.encode();
@@ -474,6 +508,7 @@ class IndexContainer extends Component {
       abi,
       action,
       authorization,
+      background,
       billFirstAuthorizer,
       blockchain,
       contract,
@@ -484,11 +519,11 @@ class IndexContainer extends Component {
       loading,
       uri,
       uriError,
+      request,
     } = this.state;
     const {
       actions,
       tx,
-      callback
     } = decoded;
     const contractOptions = knownContracts.map((contract) => (
       { key: contract, text: contract, value: contract }
@@ -532,8 +567,9 @@ class IndexContainer extends Component {
       ) },
       { menuItem: 'Callback', render: () => (
         <FormCallback
+          background={background}
+          request={request}
           onChange={this.onChangeCallback}
-          values={this.state.callback}
         />
       ) },
       { menuItem: 'Options', render: () => (

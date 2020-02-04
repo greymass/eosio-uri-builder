@@ -86,46 +86,33 @@ class FormAuthorization extends Component {
         permission: authorization['permission'],
       }
     ];
-    if (billFirstAuthorizer && !greymassnoop) {
-      data.unshift({
-        actor: authorization['actor-paying'],
-        permission: authorization['permission-paying'],
-      })
-    }
     return (
       <Segment attached>
         <Segment basic>
           <Header>
             Transaction Authorization
           </Header>
+          {['actor', 'permission'].map((field, idx) => this.getInput(field, idx))}
           <Segment attached>
             <Form.Field key="billfirst">
               <React.Fragment>
                 <Form.Checkbox
-                  checked={billFirstAuthorizer}
-                  label="Use ONLY_BILL_FIRST_AUTHORIZER?"
-                  name="billfirst"
-                  onChange={onChangeBillFirst}
+                  checked={greymassnoop}
+                  label="Use ONLY_BILL_FIRST_AUTHORIZER w/ greymassnoop?"
+                  name="greymassnoop"
+                  onChange={onChangeNoop}
                 />
               </React.Fragment>
             </Form.Field>
-            {(billFirstAuthorizer)
+            {(greymassnoop)
               ? (
                 <React.Fragment>
-                  <Form.Checkbox
-                    checked={greymassnoop}
-                    label="Use greymassnoop method?"
-                    name="greymassnoop"
-                    onChange={onChangeNoop}
-                  />
                   {['actor-paying', 'permission-paying'].map((field, idx) => this.getInput(field, idx, false))}
                 </React.Fragment>
-
               )
               : false
             }
           </Segment>
-          {['actor', 'permission'].map((field, idx) => this.getInput(field, idx))}
         </Segment>
         <Segment inverted basic>
           <Header>

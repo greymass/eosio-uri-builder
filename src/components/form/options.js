@@ -26,7 +26,7 @@ class FormOptions extends Component {
           <Form.Field>
             <Form.Checkbox
               checked={values.broadcast}
-              label="Broadcast transaction to blockchain"
+              label="Broadcast transaction to blockchain from wallet"
               name="broadcast"
               onChange={onChange}
             />

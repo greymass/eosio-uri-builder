@@ -13,9 +13,10 @@ import ReactJson from 'react-json-view';
 class FormCallback extends Component {
   render() {
     const {
+      background,
       fields,
       onChange,
-      values,
+      request,
     } = this.props;
     return (
       <Segment attached>
@@ -26,15 +27,15 @@ class FormCallback extends Component {
           <Form.Field>
             <Form.Input
               autoFocus
-              defaultValue={values.url}
+              defaultValue={request.data.callback}
               label="Callback URL"
-              name="url"
+              name="callback"
               onChange={onChange}
             />
           </Form.Field>
           <Form.Field>
             <Form.Checkbox
-              checked={values.background}
+              checked={background}
               label="Process callback in background"
               name="background"
               onChange={onChange}
@@ -50,7 +51,10 @@ class FormCallback extends Component {
             displayObjectSize={false}
             iconStyle="square"
             name={null}
-            src={values}
+            src={{
+              background,
+              callback: request.data.callback,
+            }}
             style={{ padding: '1em' }}
             theme="harmonic"
           />
