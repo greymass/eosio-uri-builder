@@ -341,7 +341,12 @@ class IndexContainer extends Component {
       const resolved = decoded.resolve(abis, authorization, block);
       const { actions } = resolved.transaction;
       const tx = resolved.transaction
-      const { background, url: callback } = resolved.getCallback(['']);
+      const cb = resolved.getCallback(['']);
+      let background
+      let callback
+      if (cb) {
+        ({ background, url: callback } = cb)
+      }
       let action = actions[0];
       let greymassnoop = false;
       let noop = false;
