@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/eosio-uri-builder/precache-manifest.86bad9205032b19f48c44d8d784bacba.js"
+  "/eosio-uri-builder/precache-manifest.d2ff6f4f61593573d345622d950461d0.js"
 );
 
 workbox.clientsClaim();
