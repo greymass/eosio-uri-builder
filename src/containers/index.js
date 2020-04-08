@@ -269,10 +269,11 @@ class IndexContainer extends Component {
       fieldsPromptSigner
     } = this.state;
     const newValue = !(fieldsMatchSigner[`authorization-${name}`] || false)
+    const placeholder = (name === 'permission') ? '............2' : '............1';
     const newState = {
       // Set the field to the placeholder value
       authorization: Object.assign({}, authorization, {
-        [name]: (newValue) ? '............1' : ''
+        [name]: (newValue) ? placeholder : ''
       }),
       // Set the boolean value
       fieldsMatchSigner: Object.assign({}, fieldsMatchSigner, {
