@@ -76,10 +76,17 @@ const chainAliases = [
   ['MEETONE','cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422'], // 0x07
   ['INSIGHTS','b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664'], // 0x08
   ['BEOS','b912d19a6abd2b1b05611ae5be473355d64d95aeff0c09bedc8c166cd6468fe4'], // 0x09
+  ['WAX', '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4'],
+  ['WAXTESTNET', 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12'],
+  ['FIO', '21dcae42c0182200e93f954a074011f9048a7624c6fe81d3c9541a614a88bd1c'],
+  ['FIOTESTNET', 'b20901380af44ef59c5918439a1f9a41d83669020319a80574b804a5f95cbd7e'],
+  ['TELOSTESTNET', '1eaa0824707c8c16bd25145493bf062aecddfeb56c736f6ba6397f3195f33c9f']
 ];
 
 const chainAPIs = {
   'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906': 'https://eos.greymass.com',
+  '21dcae42c0182200e93f954a074011f9048a7624c6fe81d3c9541a614a88bd1c': 'https://fio.greymass.com',
+  'b20901380af44ef59c5918439a1f9a41d83669020319a80574b804a5f95cbd7e': 'https://fiotestnet.greymass.com',
   '4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11': 'https://telos.greymass.com',
   'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473': 'https://jungle.greymass.com',
   '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191': 'https://kylin.eoscanada.com:443',
@@ -88,6 +95,9 @@ const chainAPIs = {
   'cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422': 'https://fullnode.meet.one',
   'b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664': 'https://instar.greymass.com',
   'b912d19a6abd2b1b05611ae5be473355d64d95aeff0c09bedc8c166cd6468fe4': 'https://api.beos.world',
+  '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4': 'https://wax.greymass.com',
+  'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12': 'https://waxtestnet.greymass.com',
+  '1eaa0824707c8c16bd25145493bf062aecddfeb56c736f6ba6397f3195f33c9f': 'https://testnet.eos.miami'
 }
 
 // opts for the signing request
