@@ -1,14 +1,14 @@
 {
   "main.css": "/eosio-uri-builder/static/css/main.195a7898.chunk.css",
-  "main.js": "/eosio-uri-builder/static/js/main.94e9feb3.chunk.js",
-  "main.js.map": "/eosio-uri-builder/static/js/main.94e9feb3.chunk.js.map",
-  "static/js/1.36c337cd.chunk.js": "/eosio-uri-builder/static/js/1.36c337cd.chunk.js",
-  "static/js/1.36c337cd.chunk.js.map": "/eosio-uri-builder/static/js/1.36c337cd.chunk.js.map",
+  "main.js": "/eosio-uri-builder/static/js/main.53735943.chunk.js",
+  "main.js.map": "/eosio-uri-builder/static/js/main.53735943.chunk.js.map",
+  "static/js/1.7f6652de.chunk.js": "/eosio-uri-builder/static/js/1.7f6652de.chunk.js",
+  "static/js/1.7f6652de.chunk.js.map": "/eosio-uri-builder/static/js/1.7f6652de.chunk.js.map",
   "runtime~main.js": "/eosio-uri-builder/static/js/runtime~main.fcaee622.js",
   "runtime~main.js.map": "/eosio-uri-builder/static/js/runtime~main.fcaee622.js.map",
-  "static/media/semantic.min.css": "/eosio-uri-builder/static/media/icons.674f50d2.eot",
+  "static/media/semantic.min.css": "/eosio-uri-builder/static/media/icons.912ec66d.svg",
   "static/css/main.195a7898.chunk.css.map": "/eosio-uri-builder/static/css/main.195a7898.chunk.css.map",
   "index.html": "/eosio-uri-builder/index.html",
-  "precache-manifest.d2ff6f4f61593573d345622d950461d0.js": "/eosio-uri-builder/precache-manifest.d2ff6f4f61593573d345622d950461d0.js",
+  "precache-manifest.0125c01df99ef8dab4366abd5e1e28a2.js": "/eosio-uri-builder/precache-manifest.0125c01df99ef8dab4366abd5e1e28a2.js",
   "service-worker.js": "/eosio-uri-builder/service-worker.js"
 }
