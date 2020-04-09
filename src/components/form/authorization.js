@@ -13,18 +13,20 @@ import ReactJson from 'react-json-view';
 import { find } from 'lodash';
 
 class FormAuthorization extends Component {
-  getInput = (field, idx, canMatchSigner = true) => {
+  getInput = (field, idx, canMatchSignerAccount = true, canMatchSignerPermission = true) => {
     const {
       aliases,
       authorization,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
+      fieldsMatchSignerPermission,
       onChange,
-      onChangeAuthorizationMatchSigner,
+      onChangeAuthorizationMatchSignerAccount,
+      onChangeAuthorizationMatchSignerPermission,
       values,
     } = this.props;
     const name = field;
-    const isMatchingSigner = !!(fieldsMatchSigner[`authorization-${name}`]);
-    const isTemplated = (isMatchingSigner);
+    const isMatchingSignerAccount = !!(fieldsMatchSignerAccount[`authorization-${name}`]);
+    const isMatchingSignerPermission = !!(fieldsMatchSignerPermission[`authorization-${name}`]);
     let value = authorization[field];
     let defaultInput = (
       <Form.Input
@@ -35,13 +37,25 @@ class FormAuthorization extends Component {
         defaultValue={(value instanceof Object) ? JSON.stringify(value) : value}
       />
     );
-    if (isTemplated) {
+    console.log(isMatchingSignerAccount, isMatchingSignerPermission, name)
+    if (isMatchingSignerAccount && name === 'actor') {
       defaultInput = (
         <Form.Field>
           <label>{name}</label>
           <Form.Input
             disabled
-            value={(isMatchingSigner) ? 'Matching Transaction Signer' : 'Prompting Transaction Signer'}
+            value="Matching Transaction Signer Account Name"
+          />
+        </Form.Field>
+      )
+    }
+    if (isMatchingSignerPermission && name === 'permission') {
+      defaultInput = (
+        <Form.Field>
+          <label>{name}</label>
+          <Form.Input
+            disabled
+            value="Matching Transaction Signer Permission"
           />
         </Form.Field>
       )
@@ -50,14 +64,27 @@ class FormAuthorization extends Component {
       <Segment attached key={name} secondary={!!(idx % 2)}>
         <Form.Field key={name}>
           {defaultInput}
-          {(canMatchSigner)
+          {(canMatchSignerAccount && name === 'actor')
             ? (
               <React.Fragment>
                 <Form.Checkbox
-                  checked={fieldsMatchSigner[`authorization-${name}`]}
-                  label="Match to Signer"
+                  checked={fieldsMatchSignerAccount[`authorization-${name}`]}
+                  label="Match to Signer Account Name"
                   name={name}
-                  onChange={onChangeAuthorizationMatchSigner}
+                  onChange={onChangeAuthorizationMatchSignerAccount}
+                />
+              </React.Fragment>
+            )
+            :  false
+          }
+          {(canMatchSignerPermission && name === 'permission')
+            ? (
+              <React.Fragment>
+                <Form.Checkbox
+                  checked={fieldsMatchSignerPermission[`authorization-${name}`]}
+                  label="Match to Signer Permission"
+                  name={name}
+                  onChange={onChangeAuthorizationMatchSignerPermission}
                 />
               </React.Fragment>
             )
@@ -72,7 +99,7 @@ class FormAuthorization extends Component {
       authorization,
       billFirstAuthorizer,
       fields,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
       greymassnoop,
       onChange,
       onChangeAuthorizationMatchSigner,

@@ -39,7 +39,7 @@ const initialState = {
   action: '',
   authorization: {
     actor: "............1",
-    permission: "............1",
+    permission: "............2",
   },
   billFirstAuthorizer: false,
   blockchain: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
@@ -49,8 +49,10 @@ const initialState = {
   contract: '',
   decoded: {},
   fields: {},
-  fieldsMatchSigner: {
+  fieldsMatchSignerAccount: {
     'authorization-actor': true,
+  },
+  fieldsMatchSignerPermission: {
     'authorization-permission': true,
   },
   fieldsPromptSigner: {},
@@ -76,7 +78,7 @@ const chainAliases = [
   ['MEETONE','cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422'], // 0x07
   ['INSIGHTS','b042025541e25a472bffde2d62edd457b7e70cee943412b1ea0f044f88591664'], // 0x08
   ['BEOS','b912d19a6abd2b1b05611ae5be473355d64d95aeff0c09bedc8c166cd6468fe4'], // 0x09
-  ['WAX', '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4'],
+  ['WAX', '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4'], // 0x10
   ['WAXTESTNET', 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12'],
   ['FIO', '21dcae42c0182200e93f954a074011f9048a7624c6fe81d3c9541a614a88bd1c'],
   ['FIOTESTNET', 'b20901380af44ef59c5918439a1f9a41d83669020319a80574b804a5f95cbd7e'],
@@ -215,17 +217,17 @@ class IndexContainer extends Component {
   onChangeMatchSigner = (e, { name }) => {
     const {
       fields,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
       fieldsPromptSigner
     } = this.state;
-    const newValue = !(fieldsMatchSigner[name] || false)
+    const newValue = !(fieldsMatchSignerAccount[name] || false)
     const newState = {
       // Set the field to the placeholder value
       fields: Object.assign({}, fields, {
         [name]: (newValue) ? '............1' : ''
       }),
       // Set the boolean value
-      fieldsMatchSigner: Object.assign({}, fieldsMatchSigner, {
+      fieldsMatchSignerAccount: Object.assign({}, fieldsMatchSignerAccount, {
         [name]: newValue
       })
     }
@@ -242,7 +244,7 @@ class IndexContainer extends Component {
   onChangePromptSigner = (e, { name, checked }) => {
     const {
       fields,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
       fieldsPromptSigner
     } = this.state;
     const newValue = !(fieldsPromptSigner[name] || false)
@@ -254,8 +256,8 @@ class IndexContainer extends Component {
         [name]: newValue
       })
     }
-    if (fieldsMatchSigner[name]) {
-      newState['fieldsMatchSigner'] = Object.assign({}, fieldsMatchSigner, {
+    if (fieldsMatchSignerAccount[name]) {
+      newState['fieldsMatchSignerAccount'] = Object.assign({}, fieldsMatchSignerAccount, {
         [name]: false
       });
     }
@@ -272,27 +274,45 @@ class IndexContainer extends Component {
     });
   }
 
-  onChangeAuthorizationMatchSigner = (e, { name }) => {
+  onChangeAuthorizationMatchSignerAccount = (e, { name }) => {
     const {
       authorization,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
       fieldsPromptSigner
     } = this.state;
-    const newValue = !(fieldsMatchSigner[`authorization-${name}`] || false)
-    const placeholder = (name === 'permission') ? '............2' : '............1';
+    const newValue = !(fieldsMatchSignerAccount[`authorization-${name}`] || false)
+    const placeholder = '............1';
     const newState = {
       // Set the field to the placeholder value
       authorization: Object.assign({}, authorization, {
         [name]: (newValue) ? placeholder : ''
       }),
       // Set the boolean value
-      fieldsMatchSigner: Object.assign({}, fieldsMatchSigner, {
+      fieldsMatchSignerAccount: Object.assign({}, fieldsMatchSignerAccount, {
         [`authorization-${name}`]: newValue
       })
     }
-    if (fieldsPromptSigner[name]) {
-      newState['fieldsPromptSigner'] = Object.assign({}, fieldsPromptSigner, {
-        [`authorization-${name}`]: false
+    this.setState(newState);
+    e.preventDefault();
+    return false;
+  }
+
+  onChangeAuthorizationMatchSignerPermission = (e, { name }) => {
+    const {
+      authorization,
+      fieldsMatchSignerPermission,
+      fieldsPromptSigner
+    } = this.state;
+    const newValue = !(fieldsMatchSignerPermission[`authorization-${name}`] || false)
+    const placeholder = '............2';
+    const newState = {
+      // Set the field to the placeholder value
+      authorization: Object.assign({}, authorization, {
+        [name]: (newValue) ? placeholder : ''
+      }),
+      // Set the boolean value
+      fieldsMatchSignerPermission: Object.assign({}, fieldsMatchSignerPermission, {
+        [`authorization-${name}`]: newValue
       })
     }
     this.setState(newState);
@@ -370,23 +390,24 @@ class IndexContainer extends Component {
         greymassnoop = true
         noop = actions[0]
       }
-      const fieldsMatchSigner = {};
+      const fieldsMatchSignerAccount = {};
+      const fieldsMatchSignerPermission = {};
       const fieldsPromptSigner = {};
       action.authorization.forEach((auth, idx) => {
         if (auth.actor === '............1') {
-          fieldsMatchSigner[`authorization-actor`] = true;
+          fieldsMatchSignerAccount[`authorization-actor`] = true;
         }
-        if (auth.permission === '............1') {
-          fieldsMatchSigner[`authorization-permission`] = true;
+        if (auth.permission === '............2') {
+          fieldsMatchSignerPermission[`authorization-permission`] = true;
         }
       });
       Object.keys(action.data).forEach((field) => {
         const data = action.data[field];
         if (data === '............2') {
-          fieldsPromptSigner[field] = true;
+          fieldsMatchSignerPermission[field] = true;
         }
         if (data === '............1') {
-          fieldsMatchSigner[field] = true;
+          fieldsMatchSignerAccount[field] = true;
         }
       });
       const combinedAuthorization = (billFirstAuthorizer) ? {
@@ -411,7 +432,8 @@ class IndexContainer extends Component {
           callback,
         },
         fields: Object.assign({}, action.data),
-        fieldsMatchSigner,
+        fieldsMatchSignerAccount,
+        fieldsMatchSignerPermission,
         fieldsPromptSigner,
         greymassnoop,
         loading: false,
@@ -529,7 +551,8 @@ class IndexContainer extends Component {
       blockchain,
       contract,
       decoded,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
+      fieldsMatchSignerPermission,
       fieldsPromptSigner,
       greymassnoop,
       loading,
@@ -560,7 +583,8 @@ class IndexContainer extends Component {
         <FormFields
           aliases={abi.types}
           fields={fields}
-          fieldsMatchSigner={fieldsMatchSigner}
+          fieldsMatchSignerAccount={fieldsMatchSignerAccount}
+          fieldsMatchSignerPermission={fieldsMatchSignerPermission}
           fieldsPromptSigner={fieldsPromptSigner}
           onChange={this.onChangeField}
           onChangeMatchSigner={this.onChangeMatchSigner}
@@ -572,10 +596,12 @@ class IndexContainer extends Component {
         <FormAuthorization
           authorization={authorization}
           billFirstAuthorizer={billFirstAuthorizer}
-          fieldsMatchSigner={fieldsMatchSigner}
+          fieldsMatchSignerAccount={fieldsMatchSignerAccount}
+          fieldsMatchSignerPermission={fieldsMatchSignerPermission}
           greymassnoop={greymassnoop}
           onChange={this.onChangeAuthorization}
-          onChangeAuthorizationMatchSigner={this.onChangeAuthorizationMatchSigner}
+          onChangeAuthorizationMatchSignerAccount={this.onChangeAuthorizationMatchSignerAccount}
+          onChangeAuthorizationMatchSignerPermission={this.onChangeAuthorizationMatchSignerPermission}
           onChangeBillFirst={this.onChangeBillFirst}
           onChangeNoop={this.onChangeNoop}
           values={this.state.callback}

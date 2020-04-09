@@ -16,7 +16,8 @@ class FormFields extends Component {
   getInput = (field, idx) => {
     const {
       aliases,
-      fieldsMatchSigner,
+      fieldsMatchSignerAccount,
+      fieldsMatchSignerPermission,
       onChange,
       onChangeMatchSigner,
       values,
@@ -24,8 +25,9 @@ class FormFields extends Component {
     const { name } = field;
     let { type } = field;
     const alias = find(aliases, { new_type_name: type });
-    const isMatchingSigner = !!(fieldsMatchSigner[name]);
-    const isTemplated = (isMatchingSigner);
+    const isMatchingSignerAccount = !!(fieldsMatchSignerAccount[name]);
+    const isMatchingSignerPermission = !!(fieldsMatchSignerPermission[name]);
+    const isTemplated = (isMatchingSignerAccount );
     const label = `${name} [${type}]${(alias) ? `, extending [${alias.type}]` : ''}`;
     let fieldType = 'string';
     let value = this.formatValue(type, values[name]);
@@ -72,17 +74,29 @@ class FormFields extends Component {
         />
       );
     }
-    if (isTemplated) {
+    if (isMatchingSignerAccount) {
       defaultInput = (
         <Form.Field>
           <label>{label}</label>
           <Form.Input
             disabled
-            value={(isMatchingSigner) ? 'Matching Transaction Signer' : 'Prompting Transaction Signer'}
+            value='Matching Transaction Signer Account Name'
           />
         </Form.Field>
       )
     }
+    if (isMatchingSignerPermission) {
+      defaultInput = (
+        <Form.Field>
+          <label>{label}</label>
+          <Form.Input
+            disabled
+            value='Matching Transaction Signer Permission'
+          />
+        </Form.Field>
+      )
+    }
+    console.log(type, alias)
     return (
       <Segment attached key={name} secondary={!!(idx % 2)}>
         <Form.Field key={name}>
@@ -91,8 +105,8 @@ class FormFields extends Component {
             ? (
               <React.Fragment>
                 <Form.Checkbox
-                  checked={fieldsMatchSigner[name]}
-                  label="Match to Signer"
+                  checked={fieldsMatchSignerAccount[name]}
+                  label="Match to Signer Account Name"
                   name={name}
                   onChange={onChangeMatchSigner}
                 />
