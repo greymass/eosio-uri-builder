@@ -142,8 +142,6 @@ class IndexContainer extends Component {
       });
     }
     if (this.state.contract && !this.state.abi) {
-      console.log("loading", this.state.contract)
-      console.log("from", this.state.blockchain)
       eos.getAbi(this.state.contract).then((result) => {
         this.setState({ abi: result.abi });
       });
