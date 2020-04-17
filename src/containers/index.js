@@ -161,20 +161,28 @@ class IndexContainer extends Component {
       this.state.action
       && this.state.action !== nextState.action
     ) {
-      const { abi, action } = nextState;
-      const { structs } = abi;
-      const struct = find(structs, { name: action });
-      if (struct) {
-        const { fields } = struct;
-        const defaultFields = {};
-        fields.forEach((field) => {
+      this.updateFields(nextState)
+    }
+  }
+
+  updateFields = (state) => {
+    const { abi, action } = state;
+    const { structs } = abi;
+    const struct = find(structs, { name: action });
+    if (struct) {
+      const { fields } = struct;
+      const defaultFields = {};
+      fields.forEach((field) => {
+        if (field.type && field.type.substr(field.type.length - 2) === "[]") {
+          defaultFields[field.name] = [];
+        } else {
           defaultFields[field.name] = '';
-        });
-        this.setState({
-          uri: undefined,
-          fields: defaultFields
-        });
-      }
+        }
+      });
+      this.setState({
+        uri: undefined,
+        fields: defaultFields
+      });
     }
   }
 
